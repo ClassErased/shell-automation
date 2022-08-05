@@ -1,14 +1,9 @@
-# -------------------------------------------------------------
-echo -e '\n\e[1;33mWelcome to jammy.sh v1.0...\n\e[0m'
-# -------------------------------------------------------------
-
-# ========== [ TWEAK ] ==========
-
-echo -e '\n\e[1;33mTweaking...\n\e[0m'
+echo -e '\n\e[1;33m--------------------\nJammy Debloater v1.0\n--------------------\e[0m\n'
 
 gsettings set org.gnome.desktop.interface clock-format '12h'
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-blue-dark'
+gsettings set org.gnome.desktop.peripherals.mouse natural-scroll 'true'
 gsettings set org.gnome.desktop.privacy remember-recent-files 'false'
 gsettings set org.gnome.desktop.privacy remove-old-temp-files 'true'
 gsettings set org.gnome.desktop.session idle-delay '0'
@@ -16,17 +11,27 @@ gsettings set org.gnome.desktop.wm.preferences button-layout 'close,minimize,max
 gsettings set org.gnome.mutter center-new-windows 'true'
 gsettings set org.gnome.nautilus.preferences show-delete-permanently 'true'
 gsettings set org.gnome.shell.extensions.dash-to-dock click-action 'minimize'
+gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size '40'
 gsettings set org.gnome.shell.extensions.dash-to-dock scroll-action 'cycle-windows'
-gsettings set org.gnome.shell favorite-apps '["org.gnome.Terminal.desktop", "org.gnome.Nautilus.desktop", "com.github.Eloston.UngoogledChromium.desktop", "code.desktop"]'
+gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts 'false'
+gsettings set org.gnome.shell.extensions.dash-to-dock show-trash 'false'
+gsettings set org.gnome.shell.extensions.ding show-home 'false'
+gsettings set org.gnome.shell favorite-apps '["org.gnome.Terminal.desktop", "org.gnome.Nautilus.desktop", "com.github.Eloston.UngoogledChromium.desktop", "code.desktop", "org.gnome.Calculator.desktop"]'
 
 tee -a "$HOME/.bashrc" > /dev/null << EOF
 bind '"\e[15~":"history -cw\C-mclear\C-m"'
 EOF
 source .bashrc
 
-# ========== [ PURGE ] ==========
+sudo tee '/etc/modprobe.d/hid_apple.conf' > /dev/null << EOF
+options hid_apple fnmode=2
+EOF
+sudo update-initramfs -u -k all
 
-echo -e '\n\e[1;33mPurging...\n\e[0m'
+sudo tee -a '/etc/default/grub' > /dev/null << EOF
+GRUB_RECORDFAIL_TIMEOUT=0
+EOF
+sudo update-grub
 
 sudo apt autoremove --purge -y \
     gedit \
@@ -43,18 +48,10 @@ sudo apt autoremove --purge -y \
     vim-common \
     yelp
 
-# ========== [ UPDATE ] ==========
-
-echo -e '\n\e[1;33mUpdating...\n\e[0m'
-
 wget https://packages.microsoft.com/keys/microsoft.asc -qO - | sudo gpg --dearmor -o /usr/share/keyrings/microsoft.gpg | sudo tee '/etc/apt/sources.list.d/vscode.list' > /dev/null <<< 'deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main'
 
 sudo apt update
 sudo apt full-upgrade -y
-
-# ========== [ INSTALL ] ==========
-
-echo -e '\n\e[1;33mInstallating...\n\e[0m'
 
 sudo apt install -y \
     code \
@@ -66,10 +63,6 @@ sudo apt install -y \
 sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 flatpak install -y --noninteractive flathub com.github.Eloston.UngoogledChromium
-
-# ========== [ CONFIGURE ] ==========
-
-echo -e '\n\e[1;33mConfiguring...\n\e[0m'
 
 mkdir -p "$HOME/.var/app/com.github.Eloston.UngoogledChromium/config"
 tee "$HOME/.var/app/com.github.Eloston.UngoogledChromium/config/chromium-flags.conf" > /dev/null << EOF
@@ -115,10 +108,6 @@ tee "$HOME/.config/Code/User/settings.json" > /dev/null << EOF
 }
 EOF
 
-# ========== [ HIDE ] ==========
-
-echo -e '\n\e[1;33mHiding...\n\e[0m'
-
 cp \
     '/usr/share/applications/im-config.desktop' \
     '/usr/share/applications/gnome-language-selector.desktop' \
@@ -132,17 +121,11 @@ tee -a \
     "$HOME/.local/share/applications/software-properties-drivers.desktop" \
     <<< 'Hidden=true' > /dev/null
 
-# ========== [ CLEAN ] ==========
-
-echo -e '\n\e[1;33mCleaning...\n\e[0m'
-
 sudo apt clean &> /dev/null
 sudo apt autoclean &> /dev/null
 sudo apt autoremove --purge -y &> /dev/null
 
-# -----------------------------------------------------------------------------------------------
-echo -e '\n\e[1;32mInstallation completed...\n\n\e[1;31mRebooting system in 10 seconds...\n\e[0m'
-# -----------------------------------------------------------------------------------------------
+echo -e '\n\e[1;32m// Installation completed...\e[0m\n\n\e[1;31m// Rebooting system in 30 seconds...\e[0m\n'
 
-sleep 10s
+sleep 30s
 sudo reboot
