@@ -1,4 +1,4 @@
-# Jammy Debloater
+# jammy.sh (Jammy Debloater)
 
 A bash script to automate some fun stuff that were missing from the default Ubuntu 22.04 LTS minimal installation.
 
