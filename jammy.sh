@@ -1,4 +1,6 @@
-echo -e '\n\e[1;33m--------------------\nJammy Debloater v1.0\n--------------------\e[0m\n'
+# ---------- [ TWEAKS ] ----------
+
+# // Make GNOME great again
 
 gsettings set org.gnome.desktop.interface clock-format '12h'
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
@@ -16,24 +18,50 @@ gsettings set org.gnome.shell.extensions.dash-to-dock scroll-action 'cycle-windo
 gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts 'false'
 gsettings set org.gnome.shell.extensions.dash-to-dock show-trash 'false'
 gsettings set org.gnome.shell.extensions.ding show-home 'false'
-gsettings set org.gnome.shell favorite-apps '["org.gnome.Terminal.desktop", "org.gnome.Nautilus.desktop", "com.github.Eloston.UngoogledChromium.desktop", "code.desktop", "org.gnome.Calculator.desktop"]'
+gsettings set org.gnome.shell favorite-apps '[
+    "org.gnome.Terminal.desktop",
+    "org.gnome.Nautilus.desktop",
+    "com.github.Eloston.UngoogledChromium.desktop",
+    "code.desktop",
+    "org.gnome.Calculator.desktop"
+]'
 
-tee -a "$HOME/.bashrc" > /dev/null << EOF
-bind '"\e[15~":"history -cw\C-mclear\C-m"'
-EOF
-source .bashrc
-
-sudo tee '/etc/modprobe.d/hid_apple.conf' > /dev/null << EOF
-options hid_apple fnmode=2
-EOF
-sudo update-initramfs -u -k all
+# // Disable OS selection
 
 sudo tee -a '/etc/default/grub' > /dev/null << EOF
 GRUB_RECORDFAIL_TIMEOUT=0
 EOF
 sudo update-grub
 
+# // Add padding to gnome-terminal
+
+tee -a "$HOME/.config/gtk-3.0/gtk.css" > /dev/null << EOF
+VteTerminal,
+TerminalScreen,
+vte-terminal {
+    padding: 10px;
+    -VteTerminal-inner-border: 10px;
+}
+EOF
+
+# // Set F5 to clear gnome-terminal history
+
+tee -a "$HOME/.bashrc" > /dev/null << EOF
+bind '"\e[15~":"history -cw\C-mclear\C-m"'
+EOF
+source .bashrc
+
+# // Set F1-12 as default on Keychron keyboards
+
+sudo tee '/etc/modprobe.d/hid_apple.conf' > /dev/null << EOF
+options hid_apple fnmode=2
+EOF
+sudo update-initramfs -u -k all
+
+# ---------- [ PURGE ] ----------
+
 sudo apt autoremove --purge -y \
+    apport \
     gedit \
     gnome-characters \
     gnome-font-viewer \
@@ -45,31 +73,39 @@ sudo apt autoremove --purge -y \
     nautilus-share \
     seahorse \
     snapd \
+    ubuntu-report \
     vim-common \
+    whoopsie \
     yelp
 
-wget https://packages.microsoft.com/keys/microsoft.asc -qO - | sudo gpg --dearmor -o /usr/share/keyrings/microsoft.gpg | sudo tee '/etc/apt/sources.list.d/vscode.list' > /dev/null <<< 'deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main'
+# ---------- [ UPDATE ] ----------
 
 sudo apt update
 sudo apt full-upgrade -y
 
+# ---------- [ INSTALL ] ----------
+
 sudo apt install -y \
-    code \
     flatpak \
     git \
     nvidia-driver-515 \
     timeshift
-
 sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
-flatpak install -y --noninteractive flathub com.github.Eloston.UngoogledChromium
+# // Ungoogled Chromium
 
+flatpak install -y --noninteractive flathub com.github.Eloston.UngoogledChromium
 mkdir -p "$HOME/.var/app/com.github.Eloston.UngoogledChromium/config"
 tee "$HOME/.var/app/com.github.Eloston.UngoogledChromium/config/chromium-flags.conf" > /dev/null << EOF
 --force-dark-mode
 --enable-features=WebUIDarkMode
 EOF
 
+# // Visual Studio Code
+
+wget https://packages.microsoft.com/keys/microsoft.asc -qO - | sudo gpg --dearmor -o /usr/share/keyrings/microsoft.gpg | sudo tee '/etc/apt/sources.list.d/vscode.list' > /dev/null <<< 'deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main'
+sudo apt-get update > /dev/null
+sudo apt install -y code
 sudo tee -a '/etc/sysctl.conf' > /dev/null <<< 'fs.inotify.max_user_watches = 524288'
 sudo sysctl -p > /dev/null
 mkdir -p "$HOME/.config/Code/User"
@@ -108,6 +144,8 @@ tee "$HOME/.config/Code/User/settings.json" > /dev/null << EOF
 }
 EOF
 
+# ---------- [ HIDE ] ----------
+
 cp \
     '/usr/share/applications/im-config.desktop' \
     '/usr/share/applications/gnome-language-selector.desktop' \
@@ -121,11 +159,14 @@ tee -a \
     "$HOME/.local/share/applications/software-properties-drivers.desktop" \
     <<< 'Hidden=true' > /dev/null
 
+# ---------- [ CLEAN ] ----------
+
 sudo apt clean &> /dev/null
 sudo apt autoclean &> /dev/null
 sudo apt autoremove --purge -y &> /dev/null
 
-echo -e '\n\e[1;32m// Installation completed...\e[0m\n\n\e[1;31m// Rebooting system in 30 seconds...\e[0m\n'
+# ---------- [ REBOOT ] ----------
 
+echo -e '\n\e[1;32m// Installation completed...\e[0m\n\n\e[1;31m// Rebooting system in 30 seconds...\e[0m\n'
 sleep 30s
 sudo reboot
