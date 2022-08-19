@@ -22,8 +22,7 @@ gsettings set org.gnome.shell favorite-apps '[
     "org.gnome.Terminal.desktop",
     "org.gnome.Nautilus.desktop",
     "com.github.Eloston.UngoogledChromium.desktop",
-    "code.desktop",
-    "org.gnome.Calculator.desktop"
+    "code.desktop"
 ]'
 
 # // Disable OS selection
@@ -48,6 +47,7 @@ EOF
 
 tee -a "$HOME/.bashrc" > /dev/null << EOF
 bind '"\e[15~":"history -cw\C-mclear\C-m"'
+export PATH=$PATH:$HOME/.local/bin
 EOF
 source .bashrc
 
@@ -89,7 +89,11 @@ sudo apt install -y \
     flatpak \
     git \
     nvidia-driver-515 \
+    python3-pip \
+    python3-virtualenv \
+    python-is-python3 \
     timeshift
+pip install -U pip virtualenv
 sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 # // Ungoogled Chromium
