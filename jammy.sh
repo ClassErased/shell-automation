@@ -1,6 +1,4 @@
-# ---------- [ TWEAKS ] ----------
-
-# // Make GNOME great again
+# // MAKE GNOME (AND PRIVACY) GREAT AGAIN
 
 gsettings set org.gnome.desktop.interface clock-format '12h'
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
@@ -13,26 +11,20 @@ gsettings set org.gnome.desktop.wm.preferences button-layout 'close,minimize,max
 gsettings set org.gnome.mutter center-new-windows 'true'
 gsettings set org.gnome.nautilus.preferences show-delete-permanently 'true'
 gsettings set org.gnome.shell.extensions.dash-to-dock click-action 'minimize'
-gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size '40'
+gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size '32'
 gsettings set org.gnome.shell.extensions.dash-to-dock scroll-action 'cycle-windows'
 gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts 'false'
 gsettings set org.gnome.shell.extensions.dash-to-dock show-trash 'false'
 gsettings set org.gnome.shell.extensions.ding show-home 'false'
-gsettings set org.gnome.shell favorite-apps '[
-    "org.gnome.Terminal.desktop",
-    "org.gnome.Nautilus.desktop",
-    "com.github.Eloston.UngoogledChromium.desktop",
-    "code.desktop"
-]'
 
-# // Disable OS selection
+# // DISABLE OS SELECTION
 
 sudo tee -a '/etc/default/grub' > /dev/null << EOF
 GRUB_RECORDFAIL_TIMEOUT=0
 EOF
 sudo update-grub
 
-# // Add padding to gnome-terminal
+# // ADD PADDING TO TERMINAL WINDOW
 
 tee -a "$HOME/.config/gtk-3.0/gtk.css" > /dev/null << EOF
 VteTerminal,
@@ -43,7 +35,7 @@ vte-terminal {
 }
 EOF
 
-# // Set F5 to clear gnome-terminal history
+# // F5 TO CLEAR TERMINAL HISTORY AND WINDOW (FOR OCD REMEDY)
 
 tee -a "$HOME/.bashrc" > /dev/null << EOF
 bind '"\e[15~":"history -cw\C-mclear\C-m"'
@@ -51,14 +43,16 @@ export PATH=$PATH:$HOME/.local/bin
 EOF
 source .bashrc
 
-# // Set F1-12 as default on Keychron keyboards
+# // F1-12 AS DEFAULT ON KEYCHRON KEYBOARDS (IF DETECTED)
 
+if [[ $(sudo lshw 2> /dev/null | grep Keychron) ]]; then
 sudo tee '/etc/modprobe.d/hid_apple.conf' > /dev/null << EOF
 options hid_apple fnmode=2
 EOF
 sudo update-initramfs -u -k all
+fi
 
-# ---------- [ PURGE ] ----------
+# // PURGE
 
 sudo apt autoremove --purge -y \
     apport \
@@ -78,34 +72,45 @@ sudo apt autoremove --purge -y \
     whoopsie \
     yelp
 
-# ---------- [ UPDATE ] ----------
+# // UPDATE
 
-sudo apt update
+sudo apt-get update > /dev/null
 sudo apt full-upgrade -y
 
-# ---------- [ INSTALL ] ----------
+# // INSTALL NVIDIA DRIVER (IF DETECTED)
+
+if [[ $(sudo lshw -C display 2> /dev/null | grep vendor) =~ NVIDIA ]]; then
+    sudo apt install -y nvidia-driver-515
+fi
+
+# // INSTALL RECOMMENDED APPS
 
 sudo apt install -y \
-    flatpak \
+    curl \
     git \
-    nvidia-driver-515 \
-    python3-pip \
-    python3-virtualenv \
-    python-is-python3 \
     timeshift
-pip install -U pip virtualenv
+
+# // INSTALL FLATPAK
+
+sudo apt install -y flatpak
 sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
-# // Ungoogled Chromium
+# // INSTALL GOOGLE CHROME
 
-flatpak install -y --noninteractive flathub com.github.Eloston.UngoogledChromium
-mkdir -p "$HOME/.var/app/com.github.Eloston.UngoogledChromium/config"
-tee "$HOME/.var/app/com.github.Eloston.UngoogledChromium/config/chromium-flags.conf" > /dev/null << EOF
---force-dark-mode
---enable-features=WebUIDarkMode
-EOF
+wget https://dl.google.com/linux/linux_signing_key.pub -qO - | sudo gpg --dearmor -o /usr/share/keyrings/google.gpg | sudo tee '/etc/apt/sources.list.d/google-chrome.list' > /dev/null <<< 'deb [arch=amd64 signed-by=/usr/share/keyrings/google.gpg] https://dl.google.com/linux/chrome/deb/ stable main' 
+sudo apt-get update > /dev/null
+sudo apt install -y google-chrome-stable
 
-# // Visual Studio Code
+# // INSTALL UNGOOGLED CHROMIUM (FOR BETTER PRIVACY)
+
+# flatpak install -y --noninteractive flathub com.github.Eloston.UngoogledChromium
+# mkdir -p "$HOME/.var/app/com.github.Eloston.UngoogledChromium/config"
+# tee "$HOME/.var/app/com.github.Eloston.UngoogledChromium/config/chromium-flags.conf" > /dev/null << EOF
+# --force-dark-mode
+# --enable-features=WebUIDarkMode
+# EOF
+
+# // INSTALL VISUAL STUDIO CODE
 
 wget https://packages.microsoft.com/keys/microsoft.asc -qO - | sudo gpg --dearmor -o /usr/share/keyrings/microsoft.gpg | sudo tee '/etc/apt/sources.list.d/vscode.list' > /dev/null <<< 'deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main'
 sudo apt-get update > /dev/null
@@ -148,7 +153,7 @@ tee "$HOME/.config/Code/User/settings.json" > /dev/null << EOF
 }
 EOF
 
-# ---------- [ HIDE ] ----------
+# // HIDE
 
 cp \
     '/usr/share/applications/im-config.desktop' \
@@ -163,14 +168,14 @@ tee -a \
     "$HOME/.local/share/applications/software-properties-drivers.desktop" \
     <<< 'Hidden=true' > /dev/null
 
-# ---------- [ CLEAN ] ----------
+# // CLEAN
 
 sudo apt clean &> /dev/null
 sudo apt autoclean &> /dev/null
 sudo apt autoremove --purge -y &> /dev/null
 
-# ---------- [ REBOOT ] ----------
+# // REBOOT
 
-echo -e '\n\e[1;32m// Installation completed...\e[0m\n\n\e[1;31m// Rebooting system in 30 seconds...\e[0m\n'
-sleep 30s
+echo -e '\n\e[1;32m// INSTALLATION COMPLETED...\e[0m\n\n\e[1;31m// REBOOTING SYSTEM IN 10 SECONDS...\e[0m\n'
+sleep 10s
 sudo reboot
