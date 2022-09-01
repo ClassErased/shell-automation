@@ -1,10 +1,10 @@
 # jammy.sh (Jammy Debloater)
 
-A bash script to automate some fun stuff that were missing from the default Ubuntu 22.04 LTS minimal installation.
+A bash script to automate some fun stuff that were missing from the default Ubuntu 22.04.1 LTS minimal installation.
 
 ## How to use this script?
 
-1. Download Ubuntu 22.04 LTS (Jammy Jellyfish) from https://ubuntu.com/download/desktop
+1. Download Ubuntu 22.04.1 LTS (Jammy Jellyfish) from https://ubuntu.com/download/desktop
 2. Select minimal installation only.
 3. Run the script on your terminal:
 
