@@ -6,6 +6,6 @@ A bash script to automate some fun stuff that were missing from the default Ubun
 
 1. Download Ubuntu 22.04.1 LTS (Jammy Jellyfish) from https://ubuntu.com/download/desktop
 2. Select minimal installation only.
-3. Run the script on your terminal:
+3. Run this script on your terminal:
 
     `wget https://raw.githubusercontent.com/sudoxey/jammy.sh/main/jammy.sh -qO - | bash`
