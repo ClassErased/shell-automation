@@ -9,3 +9,11 @@ A bash script to automate some fun stuff that were missing from the default Ubun
 3. Run this script on your terminal:
 
     `wget https://raw.githubusercontent.com/sudoxey/jammy.sh/main/jammy.sh -qO - | bash`
+
+## Credits
+
+Wallpaper taken from [here](https://www.reddit.com/r/wallpaper/comments/s8ku2j/sunrise_2560x1440/). I do not own copyright to this wallpaper and if you wish it to be removed kindly open an issue.
+
+## License
+
+[MIT License](https://github.com/sudoxey/jammy.sh/blob/main/LICENSE).
