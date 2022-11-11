@@ -103,7 +103,7 @@ sudo apt full-upgrade -y
 
 if [[ $(sudo lshw -C display 2> /dev/null | grep vendor) =~ NVIDIA ]];
     then
-        sudo apt install -y nvidia-driver-515
+        sudo apt install -y nvidia-driver-520
 fi
 
 sudo apt install -y \
